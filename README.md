@@ -80,7 +80,6 @@ scripts/               prepare_data.py, run_probe.py, make_report.py
 data/raw/              dataset (not tracked)
 data/processed/        manifest and split tables (not tracked)
 artifacts/             features (not tracked), figures, probe results
-REPORT.md              generated report
 ```
 
 ## Dataset citation
