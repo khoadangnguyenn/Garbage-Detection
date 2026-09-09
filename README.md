@@ -2,7 +2,7 @@
 
 Waste image classification on the *Recyclable and Household Waste Classification* dataset.
 The 30 dataset categories are mapped to a recyclability target (`recyclable` / `organic` /
-`non_recyclable`); a binary scheme is also available. The pipeline covers data validation,
+`non_recyclable`). The pipeline covers data validation,
 deduplication, leakage-safe splitting, frozen-backbone feature extraction, and a linear
 probe over six ImageNet/DINOv2 backbones.
 
