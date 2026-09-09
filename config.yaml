@@ -1,0 +1,86 @@
+# ── URAxUTS Garbage Detection — pipeline config ───────────────────────────────
+# One file. Every stage reads this. Edit here, not in code.
+
+seed: 42
+
+paths:
+  raw: data/raw                       # data/raw/<class>/<domain>/*.png  (see data/README.md)
+  processed: data/processed
+  manifest: data/processed/manifest.parquet
+  splits: data/processed/splits.parquet
+  manifest_clean: data/processed/manifest_clean.parquet   # 1 row / dedup group, target-ambiguous dropped
+  splits_clean: data/processed/splits_clean.parquet
+  features_dir: artifacts/features    # frozen-backbone feature cache (<key>.npz)
+  results: artifacts/probe_results.csv
+  figures_dir: artifacts/figures
+  report: REPORT.md
+
+# ── Schema the raw data must satisfy (Stage: validate) ────────────────────────
+schema:
+  size: [256, 256]                    # width, height  (all images verified 256x256)
+  mode: RGB
+  format: PNG
+  domains: [default, real_world]
+  images_per_class_per_domain: 250
+
+# ── Dedup (Stage: dedup) ─────────────────────────────────────────────────────
+dedup:
+  phash_size: 8                       # -> 64-bit perceptual hash
+  phash_max_hamming: 6               # <= this within same fine class => near-duplicate group
+  # embedding-based near-dup (same object, different angle) is a later optional pass (needs torch)
+
+# ── Split (Stage: split) ─────────────────────────────────────────────────────
+split:
+  stratify_by: fine_label            # keep all 30 classes balanced across folds (target balance follows)
+  group_by: group_id                 # dedup cluster -> never split across train/test
+  protocols:
+    mixed:   {train: 0.70, val: 0.15, test: 0.15}   # both domains shuffled; comparable to literature
+    d2r:     {val_frac_of_default: 0.15}            # train=default, test=real_world  (the deploy-gap number)
+    r2d:     {val_frac_of_real: 0.15}               # mirror
+
+# ── Model: frozen-backbone bake-off (Stage: features -> probe) ────────────────
+model:
+  input_size: 224                    # all backbones forced to 224 for a fair comparison
+  batch_size: 64
+  probe_C: 1.0                       # logistic-regression inverse-reg for the linear probe
+  # backbone list lives in pipeline/features/backbones.py
+
+# ── Task: 30 fine classes -> recyclability ───────────────────────────────────
+# 3-class scheme. binary = {recyclable} vs {everything else} (organic folded into non_recyclable).
+# REVIEW against your locale's rules — flagged items below are policy calls.
+task:
+  scheme: three_class                # three_class | binary
+  label_map:
+    recyclable:
+      - aluminum_soda_cans
+      - aluminum_food_cans
+      - steel_food_cans
+      - glass_beverage_bottles
+      - glass_food_jars
+      - glass_cosmetic_containers    # FLAG: mixed-material/small, some MRFs reject
+      - cardboard_boxes
+      - cardboard_packaging
+      - newspaper
+      - office_paper
+      - magazines
+      - plastic_water_bottles         # PET #1
+      - plastic_soda_bottles          # PET #1
+      - plastic_detergent_bottles     # HDPE #2
+      - plastic_food_containers       # FLAG: resin/cleanliness dependent
+    organic:
+      - coffee_grounds
+      - eggshells
+      - food_waste
+      - tea_bags
+    non_recyclable:
+      - plastic_shopping_bags         # film - not curbside
+      - plastic_trash_bags            # film
+      - plastic_straws
+      - disposable_plastic_cutlery
+      - plastic_cup_lids              # FLAG: small #6, sometimes accepted
+      - styrofoam_cups                # EPS #6
+      - styrofoam_food_containers     # EPS #6
+      - paper_cups                    # FLAG: poly-lined
+      - clothing                      # textile stream, separate
+      - shoes
+      - aerosol_cans                  # FLAG: empty=metal-recyclable, else household-hazardous

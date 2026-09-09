@@ -1,0 +1,25 @@
+# Dataset and pipeline outputs
+data/raw/
+data/processed/
+runs/
+
+# Artifacts: keep figures and probe results, drop the feature cache
+artifacts/*
+!artifacts/figures/
+!artifacts/probe_results.csv
+!artifacts/probe_confusion.json
+artifacts/features/
+REPORT.md
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
