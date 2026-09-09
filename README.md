@@ -77,9 +77,9 @@ pipeline/
   train/               linear probe, metrics
   report/              figures
 scripts/               prepare_data.py, run_probe.py, make_report.py
-data/raw/              dataset (not tracked)
-data/processed/        manifest and split tables (not tracked)
-artifacts/             features (not tracked), figures, probe results
+data/raw/              dataset
+data/processed/        manifest and split tables
+artifacts/             features, figures, probe results
 ```
 
 ## Dataset citation
