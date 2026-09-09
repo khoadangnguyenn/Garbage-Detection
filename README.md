@@ -65,9 +65,6 @@ Frozen backbone with a logistic-regression head, macro-F1:
 | mobilenetv3_l | 1280 | 0.841 | 0.742 | 0.818 |
 | resnet18 | 512 | 0.838 | 0.702 | 0.799 |
 
-`convnext_t_22k` has the smallest studio-to-real-world drop (0.066) and the best `d2r`
-score. Full per-class metrics are in `artifacts/probe_results.csv`; data-quality findings
-and figures are in [`REPORT.md`](REPORT.md).
 
 ## Project structure
 
